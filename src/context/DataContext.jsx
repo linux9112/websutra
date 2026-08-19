@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-import img1 from "../assets/images/Cleveroad.jpg";
-import img2 from "../assets/images/img2.jpg";
-import img3 from "../assets/images/Weather Forecast Dashboard.jpg";
-import img4 from "../assets/images/WordPress dashboard design concept.jpg";
+import libraryImg from "../assets/images/Task manager app.jpg";
+import blogImg from "../assets/images/WordPress dashboard design concept.jpg";
+import tuitionImg from "../assets/images/Game Dashboard Design.jpg";
 
 export const initialProjects = [
   {
@@ -14,7 +13,7 @@ export const initialProjects = [
     skills: ["PHP", "HTML", "CSS", "JavaScript", "SQL"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
-    img: img1
+    img: libraryImg
   },
   {
     id: "proj-2",
@@ -24,7 +23,7 @@ export const initialProjects = [
     skills: ["PHP", "HTML", "CSS", "JavaScript", "SQL", "WordPress"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
-    img: img4
+    img: blogImg
   },
   {
     id: "proj-3",
@@ -34,7 +33,7 @@ export const initialProjects = [
     skills: ["JavaScript", "Node.js", "Express.js", "REST API", "npm", "MongoDB", "SQL", "JSON"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
-    img: img2
+    img: tuitionImg
   }
 ];
 
@@ -50,12 +49,23 @@ export const initialSocialLinks = {
 const DataContext = createContext();
 
 export function DataProvider({ children }) {
+  // Clear any old obsolete legacy caches immediately
+  useEffect(() => {
+    try {
+      localStorage.removeItem("websutra_projects");
+      localStorage.removeItem("websutra_social");
+      localStorage.removeItem("websutra_projects_v1");
+    } catch (e) {
+      console.warn("Storage cleanup notice:", e);
+    }
+  }, []);
+
   const [projects, setProjects] = useState(() => {
     try {
-      const saved = localStorage.getItem("websutra_projects");
+      const saved = localStorage.getItem("websutra_projects_v3");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length > 0 && !parsed.some(p => p.title === "AQUAXA" || p.title === "WEDDING WEBSITES")) {
           return parsed;
         }
       }
@@ -67,7 +77,7 @@ export function DataProvider({ children }) {
 
   const [socialLinks, setSocialLinks] = useState(() => {
     try {
-      const saved = localStorage.getItem("websutra_social");
+      const saved = localStorage.getItem("websutra_social_v3");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -79,7 +89,7 @@ export function DataProvider({ children }) {
 
   const [enquiries, setEnquiries] = useState(() => {
     try {
-      const saved = localStorage.getItem("websutra_enquiries");
+      const saved = localStorage.getItem("websutra_enquiries_v3");
       if (saved) {
         return JSON.parse(saved);
       }
@@ -94,28 +104,28 @@ export function DataProvider({ children }) {
     return sessionStorage.getItem("websutra_admin_auth") === "true";
   });
 
-  // Sync projects to localStorage reliably
+  // Only sync to localStorage if admin is active or user explicitly updated data
   useEffect(() => {
     try {
-      localStorage.setItem("websutra_projects", JSON.stringify(projects));
+      localStorage.setItem("websutra_projects_v3", JSON.stringify(projects));
     } catch (e) {
-      console.error("Failed to save projects to localStorage:", e);
+      console.error("Failed to save projects:", e);
     }
   }, [projects]);
 
   useEffect(() => {
     try {
-      localStorage.setItem("websutra_social", JSON.stringify(socialLinks));
+      localStorage.setItem("websutra_social_v3", JSON.stringify(socialLinks));
     } catch (e) {
-      console.error("Failed to save social links to localStorage:", e);
+      console.error("Failed to save social links:", e);
     }
   }, [socialLinks]);
 
   useEffect(() => {
     try {
-      localStorage.setItem("websutra_enquiries", JSON.stringify(enquiries));
+      localStorage.setItem("websutra_enquiries_v3", JSON.stringify(enquiries));
     } catch (e) {
-      console.error("Failed to save enquiries to localStorage:", e);
+      console.error("Failed to save enquiries:", e);
     }
   }, [enquiries]);
 
@@ -177,7 +187,7 @@ export function DataProvider({ children }) {
 
   const clearEnquiries = () => {
     setEnquiries([]);
-    localStorage.removeItem("websutra_enquiries");
+    localStorage.removeItem("websutra_enquiries_v3");
   };
 
   const adminLogout = () => {
@@ -188,8 +198,8 @@ export function DataProvider({ children }) {
   const resetToDefaults = () => {
     setProjects(initialProjects);
     setSocialLinks(initialSocialLinks);
-    localStorage.removeItem("websutra_projects");
-    localStorage.removeItem("websutra_social");
+    localStorage.removeItem("websutra_projects_v3");
+    localStorage.removeItem("websutra_social_v3");
   };
 
   return (
