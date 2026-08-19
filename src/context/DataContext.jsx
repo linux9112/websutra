@@ -63,13 +63,35 @@ export function DataProvider({ children }) {
     try {
       const saved = localStorage.getItem("websutra_enquiries_v3");
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+      const legacySaved = localStorage.getItem("websutra_enquiries");
+      if (legacySaved) {
+        const parsed = JSON.parse(legacySaved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       }
     } catch (e) {
       console.error("Error parsing stored enquiries", e);
     }
-    return [];
+    return [
+      {
+        id: "enq-sample-1",
+        name: "Manmohan & Dindayal (Founder Test)",
+        email: "contact@websutra.in",
+        phone: "+91 98765 43210",
+        company: "WebSutra Studios",
+        service: "Web Application",
+        message: "Welcome to WebSutra Enquiries! New visitor submissions via the contact form will appear here in real time.",
+        date: "Today at " + new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+      }
+    ];
   });
+
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {

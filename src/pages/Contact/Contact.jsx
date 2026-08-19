@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Contact.css";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaCheckCircle } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaSpinner } from "react-icons/fa";
 import { useData } from "../../context/DataContext";
 
 function Contact() {
@@ -14,13 +14,42 @@ function Contact() {
     message: ""
   });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addEnquiry(formData);
-    setSubmitted(true);
-  };
+    setIsSubmitting(true);
 
+    // 1. Save locally in DataContext for the Admin Panel
+    addEnquiry(formData);
+
+    // 2. Also send directly to the founder's email via FormSubmit API
+    try {
+      const targetEmail = socialLinks.email || "contact@websutra.in";
+      await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          _subject: `New WebSutra Project Request from ${formData.name}`,
+          Name: formData.name,
+          Email: formData.email,
+          Phone: formData.phone || "Not provided",
+          Company: formData.company || "Not provided",
+          Service_Needed: formData.service,
+          Message: formData.message,
+          _template: "table"
+        })
+      });
+    } catch (err) {
+      console.warn("Email dispatch notice:", err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }
+  };
 
   return (
     <section className="contact" id="contact">
@@ -63,8 +92,8 @@ function Contact() {
           {submitted ? (
             <div className="form-success-box">
               <FaCheckCircle className="success-icon" />
-              <h3>Thanks for reaching out.</h3>
-              <p>We'll get back to you soon.</p>
+              <h3>Thanks for reaching out!</h3>
+              <p>Your project enquiry has been submitted. Our team will get back to you shortly.</p>
               <button
                 type="button"
                 className="btn-send-another"
@@ -147,8 +176,14 @@ function Contact() {
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               ></textarea>
 
-              <button type="submit">
-                SEND PROJECT REQUEST
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <FaSpinner className="spinning" style={{ marginRight: "8px" }} /> Sending...
+                  </>
+                ) : (
+                  "SEND PROJECT REQUEST"
+                )}
               </button>
             </form>
           )}
