@@ -8,43 +8,33 @@ import img4 from "../assets/images/WordPress dashboard design concept.jpg";
 export const initialProjects = [
   {
     id: "proj-1",
-    title: "SUCCESSWALA",
-    category: "Library Platform",
-    desc: "A modern digital platform designed to manage and improve the library experience, including memberships, seats, attendance and communication.",
-    skills: ["Library Platform", "Memberships", "Attendance", "Dashboard"],
+    title: "Successwala library",
+    category: "Management",
+    desc: "Successwala Library — A modern library management platform with digital seat booking, QR attendance, seat availability, membership/fee tracking, renewal reminders, and an admin dashboard.",
+    skills: ["PHP", "HTML", "CSS", "JavaScript", "SQL"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
     img: img1
   },
   {
     id: "proj-2",
-    title: "AQUAXA",
-    category: "Booking & Business Platform",
-    desc: "A digital experience for a waterpark with online booking, ticket management and business operations.",
-    skills: ["Booking System", "Ticket Management", "Payments", "Operations"],
-    githubUrl: "https://github.com",
-    demoUrl: "https://websutra.in",
-    img: img2
-  },
-  {
-    id: "proj-3",
-    title: "WEDDING WEBSITES",
-    category: "Digital Experiences",
-    desc: "Interactive and personalized digital wedding experiences designed for modern celebrations.",
-    skills: ["Digital Experiences", "Invitations", "RSVP", "Galleries"],
-    githubUrl: "https://github.com",
-    demoUrl: "https://websutra.in",
-    img: img3
-  },
-  {
-    id: "proj-4",
-    title: "CUSTOM WEB APPLICATIONS",
-    category: "Web Applications",
-    desc: "Custom-built digital platforms designed around specific business and user requirements.",
-    skills: ["Web Applications", "Custom Software", "APIs", "Cloud Backend"],
+    title: "Successwala blogs",
+    category: "WordPress",
+    desc: "Successwala Blogs — A modern WordPress educational news portal featuring dynamic categories, latest/trending posts, exam notifications, results, jobs, study materials, SEO optimization, and responsive design.",
+    skills: ["PHP", "HTML", "CSS", "JavaScript", "SQL", "WordPress"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
     img: img4
+  },
+  {
+    id: "proj-3",
+    title: "Tuition Fee Management",
+    category: "Node.js SaaS",
+    desc: "Education Manager is a modern multi-tenant SaaS platform designed for tuition centers, coaching institutes, and schools. It seamlessly streamlines student admissions, automated fee billing, dynamic UPI QR payments, digital receipt generation, and 1-click WhatsApp reminders. With dedicated Master Admin controls and real-time financial reporting, it empowers institutions to manage their entire academic and fee operations securely and effortlessly.",
+    skills: ["JavaScript", "Node.js", "Express.js", "REST API", "npm", "MongoDB", "SQL", "JSON"],
+    githubUrl: "https://github.com",
+    demoUrl: "https://websutra.in",
+    img: img2
   }
 ];
 
@@ -65,7 +55,7 @@ export function DataProvider({ children }) {
       const saved = localStorage.getItem("websutra_projects");
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed;
         }
       }
@@ -96,18 +86,7 @@ export function DataProvider({ children }) {
     } catch (e) {
       console.error("Error parsing stored enquiries", e);
     }
-    return [
-      {
-        id: "enq-demo-1",
-        name: "Aarav Sharma",
-        email: "aarav@example.com",
-        phone: "+91 98765 12345",
-        company: "Apex Innovations",
-        service: "Web Application",
-        message: "We need a custom dashboard and booking system built for our business.",
-        date: "Today at 01:15 PM"
-      }
-    ];
+    return [];
   });
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
