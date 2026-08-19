@@ -298,6 +298,9 @@ export default function AdminModal() {
 
       if (!putRes.ok) {
         const errorData = await putRes.json();
+        if (putRes.status === 403 || putRes.status === 401 || (errorData.message && errorData.message.includes("Resource not accessible"))) {
+          throw new Error("Token permission issue: Ensure token has 'repo' (Read & Write) access to linux9112/websutra.");
+        }
         throw new Error(errorData.message || "Failed to commit to GitHub.");
       }
 
@@ -305,12 +308,13 @@ export default function AdminModal() {
       setShowGhConfig(false);
     } catch (err) {
       console.error("GitHub Sync Error:", err);
-      showToast(`Sync Failed: ${err.message || "Invalid Token or Permission"}`);
+      showToast(`❌ Sync Failed: ${err.message || "Invalid Token or Permission"}`);
       setShowGhConfig(true);
     } finally {
       setIsPublishing(false);
     }
   };
+
 
   // Download Backup JSON file
   const handleDownloadJSON = () => {
