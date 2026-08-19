@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import "./Contact.css";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaSpinner } from "react-icons/fa";
+import { 
+  FaEnvelope, 
+  FaPhone, 
+  FaMapMarkerAlt, 
+  FaCheckCircle, 
+  FaSpinner, 
+  FaWhatsapp, 
+  FaTimes, 
+  FaUserCheck, 
+  FaArrowRight 
+} from "react-icons/fa";
 import { useData } from "../../context/DataContext";
 
 function Contact() {
@@ -15,6 +25,7 @@ function Contact() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,6 +62,19 @@ function Contact() {
     }
   };
 
+  const getCustomWhatsAppUrl = (founderName, phone) => {
+    let customText = `Hello ${founderName}, I am interested in building a project with WebSutra. I would like to discuss my requirements.`;
+    
+    if (formData.name.trim() || formData.message.trim()) {
+      const clientName = formData.name.trim() ? ` My name is ${formData.name.trim()}.` : "";
+      const selectedService = formData.service ? ` I am looking for ${formData.service} solutions.` : "";
+      const userMsg = formData.message.trim() ? ` Details: "${formData.message.trim()}"` : "";
+      customText = `Hello ${founderName}!${clientName} I am interested in collaborating with WebSutra.${selectedService}${userMsg}`;
+    }
+
+    return `https://wa.me/91${phone}?text=${encodeURIComponent(customText)}`;
+  };
+
   return (
     <section className="contact" id="contact">
       <div className="title">
@@ -76,14 +100,31 @@ function Contact() {
             <span>{socialLinks.email || "contact@websutra.in"}</span>
           </div>
 
-          <div className="info-item">
+          <div 
+            className="info-item clickable-phone" 
+            onClick={() => setShowWhatsAppModal(true)}
+            title="Click to chat or call founders"
+          >
             <FaPhone className="contact-icon" />
-            <span>{socialLinks.phone || "+91 98765 43210"}</span>
+            <span>+91 91427 22049 / +91 76312 40967</span>
           </div>
 
           <div className="info-item">
             <FaMapMarkerAlt className="contact-icon" />
             <span>{socialLinks.location || "INDIA · WORKING GLOBALLY"}</span>
+          </div>
+
+          {/* DEDICATED WHATSAPP BUTTON */}
+          <div className="whatsapp-cta-block">
+            <button 
+              type="button" 
+              className="btn-whatsapp-direct"
+              onClick={() => setShowWhatsAppModal(true)}
+            >
+              <FaWhatsapp className="wa-btn-icon" />
+              <span>Chat Directly on WhatsApp</span>
+            </button>
+            <span className="wa-cta-hint">Instant reply from our founders</span>
           </div>
         </div>
 
@@ -94,23 +135,32 @@ function Contact() {
               <FaCheckCircle className="success-icon" />
               <h3>Thanks for reaching out!</h3>
               <p>Your project enquiry has been submitted. Our team will get back to you shortly.</p>
-              <button
-                type="button"
-                className="btn-send-another"
-                onClick={() => {
-                  setSubmitted(false);
-                  setFormData({
-                    name: "",
-                    email: "",
-                    phone: "",
-                    company: "",
-                    service: "Website",
-                    message: ""
-                  });
-                }}
-              >
-                Send Another Request
-              </button>
+              <div className="success-action-buttons">
+                <button
+                  type="button"
+                  className="btn-whatsapp-followup"
+                  onClick={() => setShowWhatsAppModal(true)}
+                >
+                  <FaWhatsapp /> Fast Track on WhatsApp
+                </button>
+                <button
+                  type="button"
+                  className="btn-send-another"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setFormData({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      company: "",
+                      service: "Website",
+                      message: ""
+                    });
+                  }}
+                >
+                  Send Another Request
+                </button>
+              </div>
             </div>
           ) : (
             <form className="contact-form" onSubmit={handleSubmit}>
@@ -189,6 +239,80 @@ function Contact() {
           )}
         </div>
       </div>
+
+      {/* WHATSAPP FOUNDER SELECTION MODAL */}
+      {showWhatsAppModal && (
+        <div className="wa-modal-overlay" onClick={() => setShowWhatsAppModal(false)}>
+          <div className="wa-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="wa-modal-header">
+              <div className="wa-header-title">
+                <FaWhatsapp className="wa-title-icon" />
+                <h3>Connect on WhatsApp</h3>
+              </div>
+              <button 
+                type="button" 
+                className="wa-close-btn" 
+                onClick={() => setShowWhatsAppModal(false)}
+                title="Close"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            <p className="wa-modal-subtext">
+              Select a founder to start an instant WhatsApp conversation regarding your project:
+            </p>
+
+            <div className="wa-founder-options">
+              {/* OPTION 1: DINDAYAL */}
+              <a
+                href={getCustomWhatsAppUrl("Dindayal", "9142722049")}
+                target="_blank"
+                rel="noreferrer"
+                className="wa-founder-btn"
+                onClick={() => setShowWhatsAppModal(false)}
+              >
+                <div className="wa-founder-avatar">
+                  <FaUserCheck />
+                </div>
+                <div className="wa-founder-info">
+                  <h4>Dindayal</h4>
+                  <span className="wa-founder-role">Co-Founder & Technical Lead</span>
+                  <span className="wa-founder-phone">+91 91427 22049</span>
+                </div>
+                <div className="wa-go-arrow">
+                  <FaArrowRight />
+                </div>
+              </a>
+
+              {/* OPTION 2: MANMOHAN */}
+              <a
+                href={getCustomWhatsAppUrl("Manmohan", "7631240967")}
+                target="_blank"
+                rel="noreferrer"
+                className="wa-founder-btn"
+                onClick={() => setShowWhatsAppModal(false)}
+              >
+                <div className="wa-founder-avatar">
+                  <FaUserCheck />
+                </div>
+                <div className="wa-founder-info">
+                  <h4>Manmohan</h4>
+                  <span className="wa-founder-role">Co-Founder & Product Lead</span>
+                  <span className="wa-founder-phone">+91 76312 40967</span>
+                </div>
+                <div className="wa-go-arrow">
+                  <FaArrowRight />
+                </div>
+              </a>
+            </div>
+
+            <div className="wa-modal-footer">
+              <p>💬 An automated customized message will be pre-filled for you on WhatsApp.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

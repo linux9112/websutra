@@ -776,7 +776,30 @@ export default function AdminModal() {
                             <label>Project Description / Message:</label>
                             <p>{enq.message}</p>
                           </div>
+
+                          {enq.phone && (
+                            <div className="enquiry-wa-actions">
+                              <span className="wa-action-label">Reply on WhatsApp:</span>
+                              <a
+                                href={`https://wa.me/${enq.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${enq.name}, Dindayal here from WebSutra! Thank you for reaching out regarding ${enq.service || 'your project'}. Let's discuss your requirements.`)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="enquiry-wa-btn"
+                              >
+                                <FaWhatsapp /> As Dindayal (9142722049)
+                              </a>
+                              <a
+                                href={`https://wa.me/${enq.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${enq.name}, Manmohan here from WebSutra! Thank you for reaching out regarding ${enq.service || 'your project'}. Let's discuss your requirements.`)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="enquiry-wa-btn"
+                              >
+                                <FaWhatsapp /> As Manmohan (7631240967)
+                              </a>
+                            </div>
+                          )}
                         </div>
+
                       ))}
                     </div>
                   )}

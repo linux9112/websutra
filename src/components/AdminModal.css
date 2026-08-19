@@ -754,6 +754,43 @@
   white-space: pre-wrap;
 }
 
+.enquiry-wa-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.wa-action-label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+}
+
+.enquiry-wa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 211, 102, 0.12);
+  border: 1px solid rgba(37, 211, 102, 0.35);
+  color: #25d366;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.enquiry-wa-btn:hover {
+  background: #25d366;
+  color: #111;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+
 /* CARDS */
 .admin-card-box {
   background: #202020;
