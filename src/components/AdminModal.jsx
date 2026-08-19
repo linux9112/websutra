@@ -23,14 +23,19 @@ import {
   FaInbox,
   FaTag,
   FaImage,
-  FaUpload
+  FaUpload,
+  FaRocket,
+  FaDownload,
+  FaSyncAlt
 } from "react-icons/fa";
 
 const ADMIN_PASSWORD = "#Rajarani1";
+const GITHUB_REPO = "linux9112/websutra";
 
 export default function AdminModal() {
   const {
     projects,
+    setProjects,
     socialLinks,
     enquiries = [],
     isAdminOpen,
@@ -68,6 +73,13 @@ export default function AdminModal() {
   const [socialForm, setSocialForm] = useState({ ...socialLinks });
   const [toastMessage, setToastMessage] = useState("");
 
+  // GitHub Live Sync State
+  const [githubToken, setGithubToken] = useState(() => {
+    return localStorage.getItem("websutra_gh_token") || "";
+  });
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [showGhConfig, setShowGhConfig] = useState(false);
+
   useEffect(() => {
     if (isAdminOpen) {
       setPasswordError("");
@@ -79,7 +91,7 @@ export default function AdminModal() {
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3000);
+    setTimeout(() => setToastMessage(""), 4000);
   };
 
   const handleLogin = (e) => {
@@ -101,7 +113,6 @@ export default function AdminModal() {
     setPasswordError("");
     showToast("Admin session locked.");
   };
-
 
   const handleEditClick = (proj) => {
     setEditingProjectId(proj.id);
@@ -149,7 +160,6 @@ export default function AdminModal() {
     reader.onload = (uploadEvent) => {
       const imgObj = new Image();
       imgObj.onload = () => {
-        // Create canvas to resize and compress image to avoid localStorage quota issues
         const canvas = document.createElement("canvas");
         const MAX_WIDTH = 900;
         const MAX_HEIGHT = 650;
@@ -173,7 +183,6 @@ export default function AdminModal() {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(imgObj, 0, 0, width, height);
 
-        // Export as optimized JPEG (compact ~30-60KB)
         const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.82);
         setProjectForm((prev) => ({
           ...prev,
@@ -212,10 +221,10 @@ export default function AdminModal() {
 
     if (editingProjectId) {
       updateProject(editingProjectId, projectData);
-      showToast(`Updated "${projectData.title}"!`);
+      showToast(`Updated "${projectData.title}"! Remember to click "🚀 Publish to GitHub" below.`);
     } else {
       addProject(projectData);
-      showToast(`Added new project "${projectData.title}"!`);
+      showToast(`Added "${projectData.title}"! Remember to click "🚀 Publish to GitHub" below.`);
     }
 
     handleCancelEdit();
@@ -224,13 +233,99 @@ export default function AdminModal() {
   const handleDeleteProject = (id, title) => {
     if (window.confirm(`Are you sure you want to delete "${title || 'this project'}"?`)) {
       deleteProject(id);
-      showToast("Project deleted successfully.");
+      showToast("Project deleted. Click '🚀 Publish to GitHub' to sync live.");
       if (String(editingProjectId) === String(id)) {
         handleCancelEdit();
       }
     }
   };
 
+  // Direct Publish to GitHub API
+  const handlePublishToGitHub = async () => {
+    if (!githubToken.trim()) {
+      setShowGhConfig(true);
+      showToast("Please enter a GitHub Personal Access Token (PAT) with repo access to publish.");
+      return;
+    }
+
+    setIsPublishing(true);
+    showToast("Connecting to GitHub & syncing projects.json...");
+
+    try {
+      localStorage.setItem("websutra_gh_token", githubToken.trim());
+      const filePath = "public/projects.json";
+      const apiUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`;
+
+      // 1. Fetch current file SHA
+      let currentSha = null;
+      try {
+        const getRes = await fetch(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${githubToken.trim()}`,
+            Accept: "application/vnd.github.v3+json"
+          }
+        });
+        if (getRes.ok) {
+          const fileData = await getRes.json();
+          currentSha = fileData.sha;
+        }
+      } catch (err) {
+        console.warn("Could not retrieve previous SHA, will attempt fresh create:", err);
+      }
+
+      // 2. Encode projects JSON as base64
+      const jsonString = JSON.stringify(projects, null, 2);
+      const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+
+      // 3. Send commit via GitHub API
+      const putBody = {
+        message: `Admin: Update Selected Work projects (${projects.length} items)`,
+        content: encodedContent
+      };
+      if (currentSha) {
+        putBody.sha = currentSha;
+      }
+
+      const putRes = await fetch(apiUrl, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${githubToken.trim()}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(putBody)
+      });
+
+      if (!putRes.ok) {
+        const errorData = await putRes.json();
+        throw new Error(errorData.message || "Failed to commit to GitHub.");
+      }
+
+      showToast("🎉 Successfully published to GitHub! Vercel is now building and updating the live site globally.");
+      setShowGhConfig(false);
+    } catch (err) {
+      console.error("GitHub Sync Error:", err);
+      showToast(`Sync Failed: ${err.message || "Invalid Token or Permission"}`);
+      setShowGhConfig(true);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  // Download Backup JSON file
+  const handleDownloadJSON = () => {
+    const jsonString = JSON.stringify(projects, null, 2);
+    const blob = new Blob([jsonString], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "projects.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Downloaded projects.json backup!");
+  };
 
   const handleDeleteEnquiry = (id, clientName) => {
     if (window.confirm(`Delete enquiry from "${clientName}"?`)) {
@@ -293,7 +388,6 @@ export default function AdminModal() {
 
         {/* PASSWORD LOCK SCREEN */}
         {!isAdminAuthenticated ? (
-
           <div className="admin-login-wrapper">
             <div className="admin-login-box">
               <div className="admin-login-icon">
@@ -370,6 +464,65 @@ export default function AdminModal() {
               {/* PROJECTS TAB */}
               {activeTab === "projects" && (
                 <div className="admin-projects-section">
+                  {/* GITHUB LIVE SYNC & PUBLISH BAR */}
+                  <div className="admin-sync-bar">
+                    <div className="sync-info">
+                      <h4><FaGithub /> Live GitHub & Vercel Sync</h4>
+                      <p>Publish your added, edited, or deleted projects directly to <strong>{GITHUB_REPO}</strong> so changes update for all visitors worldwide.</p>
+                    </div>
+                    <div className="sync-buttons">
+                      <button 
+                        className="admin-publish-btn" 
+                        onClick={handlePublishToGitHub}
+                        disabled={isPublishing}
+                      >
+                        {isPublishing ? <FaSyncAlt className="spinning" /> : <FaRocket />} 
+                        {isPublishing ? "Publishing to GitHub..." : "🚀 Publish Live to GitHub"}
+                      </button>
+                      <button 
+                        className="admin-gh-toggle-btn"
+                        onClick={() => setShowGhConfig(!showGhConfig)}
+                      >
+                        ⚙️ {showGhConfig ? "Hide Token" : "GitHub Token"}
+                      </button>
+                      <button 
+                        className="admin-download-btn"
+                        onClick={handleDownloadJSON}
+                        title="Download projects.json file"
+                      >
+                        <FaDownload /> Download JSON
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* GITHUB TOKEN CONFIG BOX */}
+                  {showGhConfig && (
+                    <div className="admin-gh-config-box">
+                      <label>GitHub Personal Access Token (PAT):</label>
+                      <div className="gh-token-input-row">
+                        <input
+                          type="password"
+                          value={githubToken}
+                          onChange={(e) => setGithubToken(e.target.value)}
+                          placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                        />
+                        <button
+                          type="button"
+                          className="admin-btn-primary"
+                          onClick={() => {
+                            localStorage.setItem("websutra_gh_token", githubToken.trim());
+                            showToast("GitHub Token saved securely in browser!");
+                          }}
+                        >
+                          Save Token
+                        </button>
+                      </div>
+                      <span className="gh-token-help">
+                        Token needs <code>repo</code> scope permission. You can create one in <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer">GitHub Settings &rarr; Developer Settings &rarr; Personal access tokens</a>.
+                      </span>
+                    </div>
+                  )}
+
                   {/* Form to Add or Edit */}
                   <div className="admin-card-box">
                     <div className="admin-form-header">
@@ -388,7 +541,7 @@ export default function AdminModal() {
                             required
                             value={projectForm.title}
                             onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                            placeholder="e.g. SUCCESSWALA"
+                            placeholder="e.g. Successwala Library"
                           />
                         </div>
                         <div className="admin-field">
@@ -398,7 +551,7 @@ export default function AdminModal() {
                             required
                             value={projectForm.category}
                             onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
-                            placeholder="e.g. Library Platform"
+                            placeholder="e.g. Management Platform"
                           />
                         </div>
                       </div>
@@ -442,7 +595,7 @@ export default function AdminModal() {
                             type="text"
                             value={projectForm.skills}
                             onChange={(e) => setProjectForm({ ...projectForm, skills: e.target.value })}
-                            placeholder="React, Next.js, Node.js, Cloud"
+                            placeholder="PHP, HTML, CSS, JavaScript, SQL"
                           />
                         </div>
 
@@ -505,7 +658,7 @@ export default function AdminModal() {
 
                       <div className="admin-actions">
                         <button type="submit" className="admin-btn-primary">
-                          <FaSave /> {editingProjectId ? "Update Project" : "Add Project"}
+                          <FaSave /> {editingProjectId ? "Save Changes" : "Add Project"}
                         </button>
                         {editingProjectId && (
                           <button type="button" className="admin-btn-secondary" onClick={handleCancelEdit}>
@@ -539,7 +692,7 @@ export default function AdminModal() {
                               className="admin-edit-btn"
                               onClick={() => handleEditClick(proj)}
                             >
-                              <FaEdit /> Edit Project & Image
+                              <FaEdit /> Edit
                             </button>
                             <button
                               className="admin-del-btn"

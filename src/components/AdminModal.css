@@ -283,6 +283,157 @@
   gap: 24px;
 }
 
+/* GITHUB LIVE SYNC BAR */
+.admin-sync-bar {
+  background: linear-gradient(135deg, #1b2838 0%, #1e1e24 100%);
+  border: 1px solid rgba(100, 181, 246, 0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.sync-info h4 {
+  font-size: 16px;
+  color: #90caf9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sync-info p {
+  font-size: 12.5px;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+.sync-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-publish-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.2s;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+}
+
+.admin-publish-btn:hover:not(:disabled) {
+  background: #2196f3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(33, 150, 243, 0.5);
+}
+
+.admin-publish-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.admin-gh-toggle-btn {
+  background: #2b3340;
+  border: 1px solid #455a64;
+  color: #cfd8dc;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.admin-gh-toggle-btn:hover {
+  background: #37474f;
+  color: #fff;
+}
+
+.admin-download-btn {
+  background: #2c332e;
+  border: 1px solid #388e3c;
+  color: #a5d6a7;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+}
+
+.admin-download-btn:hover {
+  background: #388e3c;
+  color: #fff;
+}
+
+/* GITHUB CONFIG BOX */
+.admin-gh-config-box {
+  background: #14171d;
+  border: 1px solid #37474f;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-gh-config-box label {
+  font-size: 13px;
+  color: #90caf9;
+  font-weight: 600;
+}
+
+.gh-token-input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.gh-token-input-row input {
+  flex: 1;
+  min-width: 260px;
+  padding: 10px 14px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.gh-token-help {
+  font-size: 12px;
+  color: #8b949e;
+}
+
+.gh-token-help a {
+  color: #58a6ff;
+  text-decoration: underline;
+}
+
 /* FORM HEADER & EDIT INDICATOR */
 .admin-form-header {
   display: flex;
@@ -292,6 +443,7 @@
   flex-wrap: wrap;
   gap: 10px;
 }
+
 
 .admin-form-header h3 {
   font-size: 17px;

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "proj-1",
+    "title": "Successwala library",
+    "category": "Management",
+    "desc": "Successwala Library — A modern library management platform with digital seat booking, QR attendance, seat availability, membership/fee tracking, renewal reminders, and an admin dashboard.",
+    "skills": ["PHP", "HTML", "CSS", "JavaScript", "SQL"],
+    "githubUrl": "https://github.com",
+    "demoUrl": "https://websutra.in",
+    "img": "https://images.unsplash.com/photo-1507842229451-7f01dd8620d8?w=800&q=80"
+  },
+  {
+    "id": "proj-2",
+    "title": "Successwala blogs",
+    "category": "WordPress",
+    "desc": "Successwala Blogs — A modern WordPress educational news portal featuring dynamic categories, latest/trending posts, exam notifications, results, jobs, study materials, SEO optimization, and responsive design.",
+    "skills": ["PHP", "HTML", "CSS", "JavaScript", "SQL", "WordPress"],
+    "githubUrl": "https://github.com",
+    "demoUrl": "https://websutra.in",
+    "img": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80"
+  },
+  {
+    "id": "proj-3",
+    "title": "Tuition Fee Management",
+    "category": "Node.js SaaS",
+    "desc": "Education Manager is a modern multi-tenant SaaS platform designed for tuition centers, coaching institutes, and schools. It seamlessly streamlines student admissions, automated fee billing, dynamic UPI QR payments, digital receipt generation, and 1-click WhatsApp reminders. With dedicated Master Admin controls and real-time financial reporting, it empowers institutions to manage their entire academic and fee operations securely and effortlessly.",
+    "skills": ["JavaScript", "Node.js", "Express.js", "REST API", "npm", "MongoDB", "SQL", "JSON"],
+    "githubUrl": "https://github.com",
+    "demoUrl": "https://websutra.in",
+    "img": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80"
+  }
+]

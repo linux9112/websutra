@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-import libraryImg from "../assets/images/Task manager app.jpg";
-import blogImg from "../assets/images/WordPress dashboard design concept.jpg";
-import tuitionImg from "../assets/images/Game Dashboard Design.jpg";
-
 export const initialProjects = [
   {
     id: "proj-1",
@@ -13,7 +9,7 @@ export const initialProjects = [
     skills: ["PHP", "HTML", "CSS", "JavaScript", "SQL"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
-    img: libraryImg
+    img: "https://images.unsplash.com/photo-1507842229451-7f01dd8620d8?w=800&q=80"
   },
   {
     id: "proj-2",
@@ -23,7 +19,7 @@ export const initialProjects = [
     skills: ["PHP", "HTML", "CSS", "JavaScript", "SQL", "WordPress"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
-    img: blogImg
+    img: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80"
   },
   {
     id: "proj-3",
@@ -33,7 +29,7 @@ export const initialProjects = [
     skills: ["JavaScript", "Node.js", "Express.js", "REST API", "npm", "MongoDB", "SQL", "JSON"],
     githubUrl: "https://github.com",
     demoUrl: "https://websutra.in",
-    img: tuitionImg
+    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80"
   }
 ];
 
@@ -49,31 +45,7 @@ export const initialSocialLinks = {
 const DataContext = createContext();
 
 export function DataProvider({ children }) {
-  // Clear any old obsolete legacy caches immediately
-  useEffect(() => {
-    try {
-      localStorage.removeItem("websutra_projects");
-      localStorage.removeItem("websutra_social");
-      localStorage.removeItem("websutra_projects_v1");
-    } catch (e) {
-      console.warn("Storage cleanup notice:", e);
-    }
-  }, []);
-
-  const [projects, setProjects] = useState(() => {
-    try {
-      const saved = localStorage.getItem("websutra_projects_v3");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0 && !parsed.some(p => p.title === "AQUAXA" || p.title === "WEDDING WEBSITES")) {
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.error("Error parsing stored projects", e);
-    }
-    return initialProjects;
-  });
+  const [projects, setProjects] = useState(initialProjects);
 
   const [socialLinks, setSocialLinks] = useState(() => {
     try {
@@ -104,14 +76,23 @@ export function DataProvider({ children }) {
     return sessionStorage.getItem("websutra_admin_auth") === "true";
   });
 
-  // Only sync to localStorage if admin is active or user explicitly updated data
+  // Dynamically load fresh projects from /projects.json on every page visit
   useEffect(() => {
-    try {
-      localStorage.setItem("websutra_projects_v3", JSON.stringify(projects));
-    } catch (e) {
-      console.error("Failed to save projects:", e);
-    }
-  }, [projects]);
+    const fetchLiveProjects = async () => {
+      try {
+        const res = await fetch(`/projects.json?t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const liveData = await res.json();
+          if (Array.isArray(liveData) && liveData.length > 0) {
+            setProjects(liveData);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch remote projects.json, using codebase initial data:", err);
+      }
+    };
+    fetchLiveProjects();
+  }, []);
 
   useEffect(() => {
     try {
@@ -206,6 +187,7 @@ export function DataProvider({ children }) {
     <DataContext.Provider
       value={{
         projects,
+        setProjects,
         socialLinks,
         enquiries,
         isAdminOpen,
