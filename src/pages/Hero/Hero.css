@@ -5,6 +5,19 @@
   overflow:hidden;
 }
 
+/* Hide any Unicorn Studio watermarks/badges */
+.hero a[href*="unicorn.studio"],
+.hero div[class*="watermark"],
+.hero div[class*="badge"],
+.hero [data-us-project] a,
+.unicorn-badge,
+a[href*="unicorn.studio"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
 .buttn{
   position: absolute;
   top: 85%;
