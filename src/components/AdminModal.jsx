@@ -41,14 +41,13 @@ export default function AdminModal() {
     updateSocialLinks,
     deleteEnquiry,
     clearEnquiries,
+    isAdminAuthenticated,
+    setIsAdminAuthenticated,
+    adminLogout,
     resetToDefaults
   } = useData();
 
   const fileInputRef = useRef(null);
-
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem("websutra_admin_auth") === "true";
-  });
 
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -86,7 +85,7 @@ export default function AdminModal() {
   const handleLogin = (e) => {
     e.preventDefault();
     if (passwordInput === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
+      setIsAdminAuthenticated(true);
       sessionStorage.setItem("websutra_admin_auth", "true");
       setPasswordError("");
       setPasswordInput("");
@@ -97,12 +96,12 @@ export default function AdminModal() {
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem("websutra_admin_auth");
+    adminLogout();
     setPasswordInput("");
     setPasswordError("");
     showToast("Admin session locked.");
   };
+
 
   const handleEditClick = (proj) => {
     setEditingProjectId(proj.id);
@@ -242,10 +241,10 @@ export default function AdminModal() {
         <div className="admin-header">
           <div className="admin-title">
             <h2><span>WebSutra</span> Admin Control</h2>
-            <p>{isAuthenticated ? "Manage inquiries, work demos, project images, and social credentials" : "Authentication Required"}</p>
+            <p>{isAdminAuthenticated ? "Manage inquiries, work demos, project images, and social credentials" : "Authentication Required"}</p>
           </div>
           <div className="admin-header-actions">
-            {isAuthenticated && (
+            {isAdminAuthenticated && (
               <button className="admin-lock-btn" onClick={handleLogout} title="Lock Admin Session">
                 <FaLock /> Lock
               </button>
@@ -259,7 +258,8 @@ export default function AdminModal() {
         {toastMessage && <div className="admin-toast">{toastMessage}</div>}
 
         {/* PASSWORD LOCK SCREEN */}
-        {!isAuthenticated ? (
+        {!isAdminAuthenticated ? (
+
           <div className="admin-login-wrapper">
             <div className="admin-login-box">
               <div className="admin-login-icon">

@@ -108,6 +108,9 @@ export function DataProvider({ children }) {
   });
 
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return sessionStorage.getItem("websutra_admin_auth") === "true";
+  });
 
   useEffect(() => {
     localStorage.setItem("websutra_projects", JSON.stringify(projects));
@@ -172,6 +175,11 @@ export function DataProvider({ children }) {
     localStorage.removeItem("websutra_enquiries");
   };
 
+  const adminLogout = () => {
+    setIsAdminAuthenticated(false);
+    sessionStorage.removeItem("websutra_admin_auth");
+  };
+
   const resetToDefaults = () => {
     setProjects(initialProjects);
     setSocialLinks(initialSocialLinks);
@@ -187,6 +195,9 @@ export function DataProvider({ children }) {
         enquiries,
         isAdminOpen,
         setIsAdminOpen,
+        isAdminAuthenticated,
+        setIsAdminAuthenticated,
+        adminLogout,
         addProject,
         updateProject,
         deleteProject,

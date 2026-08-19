@@ -2,11 +2,16 @@ import "./Header.css"
 import { useState, useEffect } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faGithub, faInstagram, faLinkedin } from "@fortawesome/free-brands-svg-icons"
-import { faBars, faTimes } from "@fortawesome/free-solid-svg-icons"
+import { faSlidersH, faBars, faTimes } from "@fortawesome/free-solid-svg-icons"
 import { useData } from "../context/DataContext"
 
 function Header() {
-    const { socialLinks, setIsAdminOpen } = useData()
+    const { 
+        socialLinks, 
+        setIsAdminOpen, 
+        isAdminAuthenticated 
+    } = useData()
+
     const [scrolled, setScrolled] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -29,7 +34,6 @@ function Header() {
 
     const handleLogoClick = (e) => {
         const now = Date.now()
-        // Allow up to 3.5s between clicks
         let newCount = 1
         if (now - lastClickTime < 3500) {
             newCount = clickCount + 1
@@ -87,6 +91,22 @@ function Header() {
                             <FontAwesomeIcon icon={faLinkedin} />
                         </a>
                     </li>
+
+                    {/* ONLY VISIBLE WHEN LOGGED IN AS ADMIN UNTIL LOGOUT */}
+                    {isAdminAuthenticated && (
+                        <li className="header-admin-item">
+                            <button 
+                                onClick={() => {
+                                    setIsAdminOpen(true);
+                                    setMobileMenuOpen(false);
+                                }} 
+                                title="Open Admin Panel (Active Session)"
+                                className="header-admin-active-btn"
+                            >
+                                <FontAwesomeIcon icon={faSlidersH} />
+                            </button>
+                        </li>
+                    )}
                 </ul>
 
                 {/* HAMBURGER TOGGLE FOR MOBILE */}

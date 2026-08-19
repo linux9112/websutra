@@ -147,12 +147,47 @@ ul.links{
     transition: 0.3s;
 }
 
+.header-admin-active-btn {
+    text-decoration: none;
+    color: #8bc34a;
+    background: rgba(139, 195, 74, 0.15);
+    border: 1px solid rgba(139, 195, 74, 0.4);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    box-shadow: 0 0 10px rgba(139, 195, 74, 0.25);
+    animation: adminPulse 2.5s infinite;
+}
+
+@keyframes adminPulse {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(139, 195, 74, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 16px rgba(139, 195, 74, 0.5);
+    }
+}
+
+.header-admin-active-btn:hover {
+    color: #ffffff;
+    background: rgba(139, 195, 74, 0.4);
+    border-color: #8bc34a;
+    transform: scale(1.15);
+}
+
 .icons li a:hover,
 .header-admin-trigger:hover {
     color:#ffffff;
     transform:scale(1.15);
     text-shadow:0 0 8px rgba(255,255,255,0.8);
 }
+
 
 /* MOBILE TOGGLE */
 
