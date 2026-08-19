@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./AdminModal.css";
 import { useData } from "../context/DataContext";
 import { 
@@ -21,7 +21,9 @@ import {
   FaBuilding,
   FaCalendarAlt,
   FaInbox,
-  FaTag
+  FaTag,
+  FaImage,
+  FaUpload
 } from "react-icons/fa";
 
 const ADMIN_PASSWORD = "#Rajarani1";
@@ -42,6 +44,8 @@ export default function AdminModal() {
     resetToDefaults
   } = useData();
 
+  const fileInputRef = useRef(null);
+
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem("websutra_admin_auth") === "true";
   });
@@ -50,7 +54,7 @@ export default function AdminModal() {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [activeTab, setActiveTab] = useState("enquiries");
+  const [activeTab, setActiveTab] = useState("projects");
   const [editingProjectId, setEditingProjectId] = useState(null);
   const [projectForm, setProjectForm] = useState({
     title: "",
@@ -111,6 +115,9 @@ export default function AdminModal() {
       demoUrl: proj.demoUrl || "",
       img: proj.img || ""
     });
+    // Scroll smoothly to form
+    const formEl = document.querySelector(".admin-card-box");
+    if (formEl) formEl.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleCancelEdit = () => {
@@ -124,6 +131,34 @@ export default function AdminModal() {
       demoUrl: "",
       img: ""
     });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Image Upload handler (converts local file to Base64)
+  const handleImageFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose an image file (PNG, JPG, WebP)");
+      return;
+    }
+
+    // Limit to 2MB to keep localStorage lightweight
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("Image size is large. Using compression...");
+    }
+
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      const base64Url = uploadEvent.target.result;
+      setProjectForm((prev) => ({
+        ...prev,
+        img: base64Url
+      }));
+      showToast("Image uploaded and preview updated!");
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveProject = (e) => {
@@ -140,7 +175,7 @@ export default function AdminModal() {
       skills: skillsArray,
       githubUrl: projectForm.githubUrl,
       demoUrl: projectForm.demoUrl,
-      img: projectForm.img || projects[0]?.img
+      img: projectForm.img || projects[0]?.img || ""
     };
 
     if (editingProjectId) {
@@ -207,7 +242,7 @@ export default function AdminModal() {
         <div className="admin-header">
           <div className="admin-title">
             <h2><span>WebSutra</span> Admin Control</h2>
-            <p>{isAuthenticated ? "Manage inquiries, work demos, live links, and social credentials" : "Authentication Required"}</p>
+            <p>{isAuthenticated ? "Manage inquiries, work demos, project images, and social credentials" : "Authentication Required"}</p>
           </div>
           <div className="admin-header-actions">
             {isAuthenticated && (
@@ -274,16 +309,16 @@ export default function AdminModal() {
             {/* Tabs */}
             <div className="admin-tabs">
               <button
-                className={`admin-tab-btn ${activeTab === "enquiries" ? "active" : ""}`}
-                onClick={() => setActiveTab("enquiries")}
-              >
-                <FaInbox /> Enquiries {enquiries.length > 0 && <span className="tab-badge">{enquiries.length}</span>}
-              </button>
-              <button
                 className={`admin-tab-btn ${activeTab === "projects" ? "active" : ""}`}
                 onClick={() => setActiveTab("projects")}
               >
                 <FaEdit /> Selected Work ({projects.length})
+              </button>
+              <button
+                className={`admin-tab-btn ${activeTab === "enquiries" ? "active" : ""}`}
+                onClick={() => setActiveTab("enquiries")}
+              >
+                <FaInbox /> Enquiries {enquiries.length > 0 && <span className="tab-badge">{enquiries.length}</span>}
               </button>
               <button
                 className={`admin-tab-btn ${activeTab === "social" ? "active" : ""}`}
@@ -298,6 +333,194 @@ export default function AdminModal() {
 
             {/* Content */}
             <div className="admin-body">
+              {/* PROJECTS TAB */}
+              {activeTab === "projects" && (
+                <div className="admin-projects-section">
+                  {/* Form to Add or Edit */}
+                  <div className="admin-card-box">
+                    <div className="admin-form-header">
+                      <h3>{editingProjectId ? "✏️ Edit Project & Cover Image" : "➕ Add New Project"}</h3>
+                      {editingProjectId && (
+                        <span className="editing-indicator">Editing Project ID: {editingProjectId}</span>
+                      )}
+                    </div>
+
+                    <form onSubmit={handleSaveProject} className="admin-form">
+                      <div className="admin-form-row">
+                        <div className="admin-field">
+                          <label>Project Title *</label>
+                          <input
+                            type="text"
+                            required
+                            value={projectForm.title}
+                            onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                            placeholder="e.g. SUCCESSWALA"
+                          />
+                        </div>
+                        <div className="admin-field">
+                          <label>Category / Type *</label>
+                          <input
+                            type="text"
+                            required
+                            value={projectForm.category}
+                            onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
+                            placeholder="e.g. Library Platform"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="admin-field">
+                        <label>Description *</label>
+                        <textarea
+                          required
+                          rows="3"
+                          value={projectForm.desc}
+                          onChange={(e) => setProjectForm({ ...projectForm, desc: e.target.value })}
+                          placeholder="Brief overview of the project..."
+                        ></textarea>
+                      </div>
+
+                      <div className="admin-form-row">
+                        <div className="admin-field">
+                          <label>Live Demo URL</label>
+                          <input
+                            type="url"
+                            value={projectForm.demoUrl}
+                            onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
+                            placeholder="https://example.com"
+                          />
+                        </div>
+                        <div className="admin-field">
+                          <label>GitHub Repository URL</label>
+                          <input
+                            type="url"
+                            value={projectForm.githubUrl}
+                            onChange={(e) => setProjectForm({ ...projectForm, githubUrl: e.target.value })}
+                            placeholder="https://github.com/..."
+                          />
+                        </div>
+                      </div>
+
+                      <div className="admin-form-row">
+                        <div className="admin-field">
+                          <label>Tags / Skills (comma separated)</label>
+                          <input
+                            type="text"
+                            value={projectForm.skills}
+                            onChange={(e) => setProjectForm({ ...projectForm, skills: e.target.value })}
+                            placeholder="React, Next.js, Node.js, Cloud"
+                          />
+                        </div>
+
+                        {/* IMAGE UPLOAD & URL EDIT SECTION */}
+                        <div className="admin-field">
+                          <label><FaImage /> Project Cover Image</label>
+                          <div className="admin-image-input-container">
+                            <div className="admin-image-preview-wrapper">
+                              {projectForm.img ? (
+                                <img
+                                  src={projectForm.img}
+                                  alt="Preview"
+                                  className="admin-image-preview-thumb"
+                                />
+                              ) : (
+                                <div className="admin-image-preview-placeholder">
+                                  <FaImage />
+                                  <span>No Image</span>
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="admin-image-controls">
+                              <input
+                                type="text"
+                                value={projectForm.img}
+                                onChange={(e) => setProjectForm({ ...projectForm, img: e.target.value })}
+                                placeholder="Paste image URL (https://...)"
+                                className="admin-image-url-input"
+                              />
+
+                              <div className="admin-upload-actions">
+                                <label className="admin-file-upload-label">
+                                  <FaUpload /> Upload from Device
+                                  <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    accept="image/*"
+                                    onChange={handleImageFileUpload}
+                                    style={{ display: "none" }}
+                                  />
+                                </label>
+                                {projectForm.img && (
+                                  <button
+                                    type="button"
+                                    className="admin-clear-img-btn"
+                                    onClick={() => {
+                                      setProjectForm({ ...projectForm, img: "" });
+                                      if (fileInputRef.current) fileInputRef.current.value = "";
+                                    }}
+                                  >
+                                    Remove Image
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="admin-actions">
+                        <button type="submit" className="admin-btn-primary">
+                          <FaSave /> {editingProjectId ? "Update Project" : "Add Project"}
+                        </button>
+                        {editingProjectId && (
+                          <button type="button" className="admin-btn-secondary" onClick={handleCancelEdit}>
+                            Cancel Edit
+                          </button>
+                        )}
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Current Projects List */}
+                  <div className="admin-list-container">
+                    <h3>Current Projects in "Selected Work"</h3>
+                    <div className="admin-projects-grid">
+                      {projects.map((proj) => (
+                        <div className="admin-project-item" key={proj.id}>
+                          <div className="admin-item-top">
+                            <img src={proj.img} alt={proj.title} className="admin-item-thumb" />
+                            <div>
+                              <h4>{proj.title}</h4>
+                              <span className="admin-badge">{proj.category}</span>
+                            </div>
+                          </div>
+                          <p className="admin-item-desc">{proj.desc}</p>
+                          <div className="admin-item-links">
+                            {proj.demoUrl && <span title={proj.demoUrl}>🌐 Demo: {proj.demoUrl}</span>}
+                            {proj.githubUrl && <span title={proj.githubUrl}>💻 Repo: {proj.githubUrl}</span>}
+                          </div>
+                          <div className="admin-item-actions">
+                            <button
+                              className="admin-edit-btn"
+                              onClick={() => handleEditClick(proj)}
+                            >
+                              <FaEdit /> Edit Project & Image
+                            </button>
+                            <button
+                              className="admin-del-btn"
+                              onClick={() => handleDeleteProject(proj.id, proj.title)}
+                            >
+                              <FaTrash /> Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* ENQUIRIES TAB */}
               {activeTab === "enquiries" && (
                 <div className="admin-enquiries-section">
@@ -366,141 +589,6 @@ export default function AdminModal() {
                       ))}
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* PROJECTS TAB */}
-              {activeTab === "projects" && (
-                <div className="admin-projects-section">
-                  {/* Form to Add or Edit */}
-                  <div className="admin-card-box">
-                    <h3>{editingProjectId ? "✏️ Edit Project" : "➕ Add New Project"}</h3>
-                    <form onSubmit={handleSaveProject} className="admin-form">
-                      <div className="admin-form-row">
-                        <div className="admin-field">
-                          <label>Project Title *</label>
-                          <input
-                            type="text"
-                            required
-                            value={projectForm.title}
-                            onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                            placeholder="e.g. SUCCESSWALA"
-                          />
-                        </div>
-                        <div className="admin-field">
-                          <label>Category / Type *</label>
-                          <input
-                            type="text"
-                            required
-                            value={projectForm.category}
-                            onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
-                            placeholder="e.g. Library Platform"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="admin-field">
-                        <label>Description *</label>
-                        <textarea
-                          required
-                          rows="3"
-                          value={projectForm.desc}
-                          onChange={(e) => setProjectForm({ ...projectForm, desc: e.target.value })}
-                          placeholder="Brief overview of the project..."
-                        ></textarea>
-                      </div>
-
-                      <div className="admin-form-row">
-                        <div className="admin-field">
-                          <label>Live Demo URL</label>
-                          <input
-                            type="url"
-                            value={projectForm.demoUrl}
-                            onChange={(e) => setProjectForm({ ...projectForm, demoUrl: e.target.value })}
-                            placeholder="https://example.com"
-                          />
-                        </div>
-                        <div className="admin-field">
-                          <label>GitHub Repository URL</label>
-                          <input
-                            type="url"
-                            value={projectForm.githubUrl}
-                            onChange={(e) => setProjectForm({ ...projectForm, githubUrl: e.target.value })}
-                            placeholder="https://github.com/..."
-                          />
-                        </div>
-                      </div>
-
-                      <div className="admin-form-row">
-                        <div className="admin-field">
-                          <label>Tags / Skills (comma separated)</label>
-                          <input
-                            type="text"
-                            value={projectForm.skills}
-                            onChange={(e) => setProjectForm({ ...projectForm, skills: e.target.value })}
-                            placeholder="React, Next.js, Node.js, Cloud"
-                          />
-                        </div>
-                        <div className="admin-field">
-                          <label>Image URL (Optional)</label>
-                          <input
-                            type="text"
-                            value={projectForm.img}
-                            onChange={(e) => setProjectForm({ ...projectForm, img: e.target.value })}
-                            placeholder="Image URL or leave empty for default"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="admin-actions">
-                        <button type="submit" className="admin-btn-primary">
-                          <FaSave /> {editingProjectId ? "Update Project" : "Add Project"}
-                        </button>
-                        {editingProjectId && (
-                          <button type="button" className="admin-btn-secondary" onClick={handleCancelEdit}>
-                            Cancel Edit
-                          </button>
-                        )}
-                      </div>
-                    </form>
-                  </div>
-
-                  {/* Current Projects List */}
-                  <div className="admin-list-container">
-                    <h3>Current Projects in "Selected Work"</h3>
-                    <div className="admin-projects-grid">
-                      {projects.map((proj) => (
-                        <div className="admin-project-item" key={proj.id}>
-                          <div className="admin-item-top">
-                            <img src={proj.img} alt={proj.title} className="admin-item-thumb" />
-                            <div>
-                              <h4>{proj.title}</h4>
-                              <span className="admin-badge">{proj.category}</span>
-                            </div>
-                          </div>
-                          <p className="admin-item-desc">{proj.desc}</p>
-                          <div className="admin-item-links">
-                            {proj.demoUrl && <span title={proj.demoUrl}>🌐 Demo: {proj.demoUrl}</span>}
-                            {proj.githubUrl && <span title={proj.githubUrl}>💻 Repo: {proj.githubUrl}</span>}
-                          </div>
-                          <div className="admin-item-actions">
-                            <button
-                              className="admin-edit-btn"
-                              onClick={() => handleEditClick(proj)}
-                            >
-                              <FaEdit /> Edit
-                            </button>
-                            <button
-                              className="admin-del-btn"
-                              onClick={() => handleDeleteProject(proj.id, proj.title)}
-                            >
-                              <FaTrash /> Delete
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               )}
 
