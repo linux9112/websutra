@@ -133,7 +133,7 @@ export default function AdminModal() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Image Upload handler (converts local file to Base64)
+  // Image Upload handler with instant canvas resizing/compression
   const handleImageFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -143,60 +143,94 @@ export default function AdminModal() {
       return;
     }
 
-    // Limit to 2MB to keep localStorage lightweight
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("Image size is large. Using compression...");
-    }
+    showToast("Processing and optimizing image...");
 
     const reader = new FileReader();
     reader.onload = (uploadEvent) => {
-      const base64Url = uploadEvent.target.result;
-      setProjectForm((prev) => ({
-        ...prev,
-        img: base64Url
-      }));
-      showToast("Image uploaded and preview updated!");
+      const imgObj = new Image();
+      imgObj.onload = () => {
+        // Create canvas to resize and compress image to avoid localStorage quota issues
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 900;
+        const MAX_HEIGHT = 650;
+        let width = imgObj.width;
+        let height = imgObj.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(imgObj, 0, 0, width, height);
+
+        // Export as optimized JPEG (compact ~30-60KB)
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+        setProjectForm((prev) => ({
+          ...prev,
+          img: compressedDataUrl
+        }));
+        showToast("Image uploaded and optimized successfully!");
+      };
+      imgObj.onerror = () => {
+        showToast("Error loading image. Please try another file.");
+      };
+      imgObj.src = uploadEvent.target.result;
     };
     reader.readAsDataURL(file);
   };
 
   const handleSaveProject = (e) => {
     e.preventDefault();
-    const skillsArray = projectForm.skills
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+    const skillsArray = typeof projectForm.skills === "string"
+      ? projectForm.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : Array.isArray(projectForm.skills)
+      ? projectForm.skills
+      : [];
 
     const projectData = {
-      title: projectForm.title,
-      category: projectForm.category,
-      desc: projectForm.desc,
+      title: projectForm.title.trim(),
+      category: projectForm.category.trim(),
+      desc: projectForm.desc.trim(),
       skills: skillsArray,
-      githubUrl: projectForm.githubUrl,
-      demoUrl: projectForm.demoUrl,
-      img: projectForm.img || projects[0]?.img || ""
+      githubUrl: projectForm.githubUrl.trim(),
+      demoUrl: projectForm.demoUrl.trim(),
+      img: projectForm.img || ""
     };
 
     if (editingProjectId) {
       updateProject(editingProjectId, projectData);
-      showToast("Project updated successfully!");
+      showToast(`Updated "${projectData.title}"!`);
     } else {
       addProject(projectData);
-      showToast("New project added successfully!");
+      showToast(`Added new project "${projectData.title}"!`);
     }
 
     handleCancelEdit();
   };
 
   const handleDeleteProject = (id, title) => {
-    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
+    if (window.confirm(`Are you sure you want to delete "${title || 'this project'}"?`)) {
       deleteProject(id);
-      showToast("Project deleted.");
-      if (editingProjectId === id) {
+      showToast("Project deleted successfully.");
+      if (String(editingProjectId) === String(id)) {
         handleCancelEdit();
       }
     }
   };
+
 
   const handleDeleteEnquiry = (id, clientName) => {
     if (window.confirm(`Delete enquiry from "${clientName}"?`)) {

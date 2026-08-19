@@ -61,37 +61,40 @@ const DataContext = createContext();
 
 export function DataProvider({ children }) {
   const [projects, setProjects] = useState(() => {
-    const saved = localStorage.getItem("websutra_projects");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Error parsing stored projects", e);
+    try {
+      const saved = localStorage.getItem("websutra_projects");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
       }
+    } catch (e) {
+      console.error("Error parsing stored projects", e);
     }
     return initialProjects;
   });
 
   const [socialLinks, setSocialLinks] = useState(() => {
-    const saved = localStorage.getItem("websutra_social");
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem("websutra_social");
+      if (saved) {
         return JSON.parse(saved);
-      } catch (e) {
-        console.error("Error parsing stored social links", e);
       }
+    } catch (e) {
+      console.error("Error parsing stored social links", e);
     }
     return initialSocialLinks;
   });
 
   const [enquiries, setEnquiries] = useState(() => {
-    const saved = localStorage.getItem("websutra_enquiries");
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem("websutra_enquiries");
+      if (saved) {
         return JSON.parse(saved);
-      } catch (e) {
-        console.error("Error parsing stored enquiries", e);
       }
+    } catch (e) {
+      console.error("Error parsing stored enquiries", e);
     }
     return [
       {
@@ -112,33 +115,56 @@ export function DataProvider({ children }) {
     return sessionStorage.getItem("websutra_admin_auth") === "true";
   });
 
+  // Sync projects to localStorage reliably
   useEffect(() => {
-    localStorage.setItem("websutra_projects", JSON.stringify(projects));
+    try {
+      localStorage.setItem("websutra_projects", JSON.stringify(projects));
+    } catch (e) {
+      console.error("Failed to save projects to localStorage:", e);
+    }
   }, [projects]);
 
   useEffect(() => {
-    localStorage.setItem("websutra_social", JSON.stringify(socialLinks));
+    try {
+      localStorage.setItem("websutra_social", JSON.stringify(socialLinks));
+    } catch (e) {
+      console.error("Failed to save social links to localStorage:", e);
+    }
   }, [socialLinks]);
 
   useEffect(() => {
-    localStorage.setItem("websutra_enquiries", JSON.stringify(enquiries));
+    try {
+      localStorage.setItem("websutra_enquiries", JSON.stringify(enquiries));
+    } catch (e) {
+      console.error("Failed to save enquiries to localStorage:", e);
+    }
   }, [enquiries]);
 
   const addProject = (newProj) => {
-    setProjects((prev) => [
-      ...prev,
-      { ...newProj, id: "proj-" + Date.now() }
-    ]);
+    const projectWithId = {
+      ...newProj,
+      id: "proj-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5)
+    };
+    setProjects((prev) => [projectWithId, ...prev]);
   };
 
   const updateProject = (id, updatedFields) => {
     setProjects((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updatedFields } : p))
+      prev.map((p) => {
+        if (String(p.id) === String(id)) {
+          return {
+            ...p,
+            ...updatedFields,
+            id: p.id
+          };
+        }
+        return p;
+      })
     );
   };
 
   const deleteProject = (id) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
+    setProjects((prev) => prev.filter((p) => String(p.id) !== String(id)));
   };
 
   const updateSocialLinks = (newLinks) => {
@@ -167,7 +193,7 @@ export function DataProvider({ children }) {
   };
 
   const deleteEnquiry = (id) => {
-    setEnquiries((prev) => prev.filter((e) => e.id !== id));
+    setEnquiries((prev) => prev.filter((e) => String(e.id) !== String(id)));
   };
 
   const clearEnquiries = () => {
