@@ -26,8 +26,10 @@ import {
   FaUpload,
   FaRocket,
   FaDownload,
-  FaSyncAlt
+  FaSyncAlt,
+  FaWhatsapp
 } from "react-icons/fa";
+
 
 const ADMIN_PASSWORD = "#Rajarani1";
 const GITHUB_REPO = "linux9112/websutra";
