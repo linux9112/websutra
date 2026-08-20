@@ -103,7 +103,7 @@
       "heightMode": 2,
       "left": 0.5,
       "top": 0.61,
-      "src": "/hero_character_aligned.png",
+      "src": "/hero_character_clean.png",
       "imageNaturalSize": {
         "type": "Vec2",
         "_x": 1024,
