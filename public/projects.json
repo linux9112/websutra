@@ -2,7 +2,7 @@
   {
     "title": "Waterpark",
     "category": "NodeJs",
-    "desc": "write descriptionfor waterpark booking ticket generation",
+    "desc": "Waterpark Booking System — A web-based ticket booking platform with online ticket generation, booking management, unique ticket/QR verification, payment integration, and automated booking confirmation(otp section is not working on demo website)",
     "skills": [
       "JavaScript",
       "Node.js",
