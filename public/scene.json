@@ -103,7 +103,7 @@
       "heightMode": 2,
       "left": 0.5,
       "top": 0.61,
-      "src": "https://assets.unicorn.studio/images/oUAXS1USTOMY6jlGrbhcMLiL4CJ2/file_00000000de6c71f5ac06e464e67f5449_nobg_1773231676066.png",
+      "src": "/hero_character_aligned.png",
       "imageNaturalSize": {
         "type": "Vec2",
         "_x": 1024,
